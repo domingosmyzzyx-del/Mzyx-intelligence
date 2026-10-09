@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#061426">
+<title>MZyx Intelligence</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#061426;color:#eaf6ff;font-family:Arial,sans-serif}
+header{padding:22px;background:#0a1d32;border-bottom:1px solid #00c8ee}
+.logo{font-size:25px;font-weight:bold;color:#00d9ff}
+main{max-width:700px;margin:auto;padding:18px}
+.card{background:#0c2036;border:1px solid #15506b;border-radius:14px;padding:18px;margin:18px 0}
+p{color:#b7cadd;line-height:1.6}
+input,button{width:100%;padding:13px;margin-top:10px;border-radius:8px;font-size:16px}
+input{background:#061426;color:white;border:1px solid #28708e}
+button{background:#00c8ee;color:#061426;border:0;font-weight:bold}
+.result{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:15px}
+small{color:#a6bed2}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">MZyx Intelligence</div>
+<small>Informação pública · Localização autorizada</small>
+</header>
+<main>
+<h1>Centro de investigação digital</h1>
+<p>Pesquisa informações básicas e solicita a localização apenas com autorização.</p>
+
+<section class="card">
+<h2>01 — Pesquisa de números</h2>
+<label for="phone">Número internacional</label>
+<input id="phone" type="tel" placeholder="+244 923 000 000">
+<button id="search">Pesquisar número</button>
+<div id="result" class="result" aria-live="polite"></div>
+</section>
+
+<section class="card">
+<h2>02 — Localização autorizada</h2>
+<p>Este botão solicita a localização deste dispositivo. A pessoa tem de permitir o acesso no navegador.</p>
+<button id="locate">Solicitar a minha localização</button>
+<div id="location" class="result" aria-live="polite"></div>
+</section>
+
+<p><small>O número de telefone, por si só, não revela a posição GPS. Esta versão não envia nem guarda coordenadas num servidor.</small></p>
+</main>
+<script>
+const countries=[
+["+244","Angola"],["+351","Portugal"],["+258","Moçambique"],
+["+55","Brasil"],["+27","África do Sul"],["+234","Nigéria"],
+["+44","Reino Unido"],["+33","França"],["+34","Espanha"],
+["+49","Alemanha"],["+1","Estados Unidos/Canadá e outras regiões"]
+];
+document.getElementById("search").onclick=()=>{
+const n=document.getElementById("phone").value.trim().replace(/[\s().-]/g,"");
+const r=document.getElementById("result");
+if(!/^\+[1-9]\d{6,14}$/.test(n)){
+r.textContent="Introduz um número internacional válido, começando por + e o indicativo.";
+return;
+}
+const c=countries.find(x=>n.startsWith(x[0]));
+r.textContent="Número: "+n+"\nPaís/região: "+(c?c[1]:"Indicativo não identificado")+"\nGPS do titular: indisponível através do número.";
+};
+document.getElementById("locate").onclick=()=>{
+const o=document.getElementById("location");
+if(!window.isSecureContext){o.textContent="Abre o site através de HTTPS para solicitar a localização.";return;}
+if(!navigator.geolocation){o.textContent="Geolocalização não suportada.";return;}
+o.textContent="A aguardar a tua autorização...";
+navigator.geolocation.getCurrentPosition(p=>{
+const a=p.coords.latitude,b=p.coords.longitude;
+o.textContent="Localização autorizada.\nPrecisão estimada: "+Math.round(p.coords.accuracy)+" metros.\nAbrir mapa: https://www.openstreetmap.org/?mlat="+a+"&mlon="+b+"#map=16/"+a+"/"+b;
+},e=>{
+o.textContent=e.code===1?"Autorização recusada.":e.code===3?"Pedido expirado. Tenta novamente.":"Não foi possível determinar a localização.";
+},{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+};
+</script>
+</body>
+</html>
